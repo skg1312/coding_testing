@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screen Recording</title>
+    <style>
+        /* Style for the body */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Style for the header */
+        h1 {
+            text-align: center;
+            background-color: #0073e6;
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Style for buttons */
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0073e6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Center buttons horizontally */
+        .button-container {
+            text-align: center;
+        }
+
+        /* Style for additional links */
+        button.additional-links {
+            background-color: #4CAF50;
+        }
+
+        /* Style for links in the footer */
+        .footer-links a {
+            color: #0073e6;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Screen Recording</h1>
+    <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" disabled>Stop Recording</button>
+    <div class="button-container" id="linkButtons">
+        <button onclick="openLinkInNewWindow('https://www.hackerrank.com/engineers-day-lv2')">SECOND YEAR</button>
+        <button onclick="openLinkInNewWindow('https://www.hackerrank.com/engineers-day-lv3')">THIRD YEAR</button>
+        <button onclick="openLinkInNewWindow('https://www.hackerrank.com/engineers-day-lv4')">FOURTH YEAR</button>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        const startRecordingButton = document.getElementById("startRecording");
+        const stopRecordingButton = document.getElementById("stopRecording");
+
+        startRecordingButton.addEventListener("click", startRecording);
+        stopRecordingButton.addEventListener("click", stopRecording);
+
+        async function startRecording() {
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: "video/webm" });
+
+                // Create a temporary anchor element to trigger the download
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "screen_recording.webm";
+                a.style.display = "none";
+                document.body.appendChild(a);
+
+                // Trigger the download
+                a.click();
+
+                // Clean up
+                document.body.removeChild(a);
+            };
+
+            mediaRecorder.start();
+            startRecordingButton.disabled = true;
+            stopRecordingButton.disabled = false;
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            startRecordingButton.disabled = false;
+            stopRecordingButton.disabled = true;
+        }
+
+        function openLinkInNewWindow(url) {
+            const newWindow = window.open(url, '_blank', 'fullscreen=yes');
+            newWindow.focus();
+        }
+    </script>
+</body>
+</html>
